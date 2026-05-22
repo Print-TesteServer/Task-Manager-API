@@ -99,6 +99,15 @@ class TaskManagerIntegrationTest {
     }
 
     @Test
+    fun `GET on POST-only register endpoint - returns 405`() {
+        mockMvc.get("/api/auth/register").andExpect {
+            status { isMethodNotAllowed() }
+            jsonPath("$.status") { value(405) }
+            jsonPath("$.error") { value("Method Not Allowed") }
+        }
+    }
+
+    @Test
     fun `register duplicate email - returns 409`() {
         val email = "dup-${UUID.randomUUID().toString().take(8)}@test.com"
         registerAndGetToken("First", email, "senha123")

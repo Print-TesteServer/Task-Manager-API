@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.validation.FieldError
+import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -59,6 +60,18 @@ class GlobalExceptionHandler {
         ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
             ErrorResponse(status = 401, error = "Unauthorized", message = "Invalid email or password")
         )
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
+    fun handleMethodNotAllowed(ex: HttpRequestMethodNotSupportedException): ResponseEntity<ErrorResponse> {
+        val supported = ex.supportedMethods?.joinToString(", ") ?: "unknown"
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(
+            ErrorResponse(
+                status = 405,
+                error = "Method Not Allowed",
+                message = "HTTP method '${ex.method}' is not supported for this endpoint. Supported: $supported"
+            )
+        )
+    }
 
     @ExceptionHandler(Exception::class)
     fun handleGeneric(ex: Exception): ResponseEntity<ErrorResponse> =
