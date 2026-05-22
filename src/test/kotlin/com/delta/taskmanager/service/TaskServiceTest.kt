@@ -46,13 +46,13 @@ class TaskServiceTest {
         val savedTask = mockTask(user)
 
         whenever(userRepository.findByEmail(ownerEmail)).thenReturn(Optional.of(user))
-        whenever(taskRepository.save(any())).thenReturn(savedTask)
+        whenever(taskRepository.save(any<Task>())).thenReturn(savedTask)
 
         val result = taskService.create(request, ownerEmail)
 
         assertEquals("My Task", result.title)
         assertEquals(TaskStatus.PENDING, result.status)
-        verify(taskRepository).save(any())
+        verify(taskRepository).save(any<Task>())
     }
 
     // ── List ──────────────────────────────────────────────────────────────────
@@ -84,7 +84,7 @@ class TaskServiceTest {
         assertEquals(1, result.size)
         assertEquals(TaskStatus.DONE, result[0].status)
         verify(taskRepository).findAllByUserIdAndStatus(user.id, TaskStatus.DONE)
-        verify(taskRepository, never()).findAllByUserId(any())
+        verify(taskRepository, never()).findAllByUserId(any<Long>())
     }
 
     // ── Find by ID ────────────────────────────────────────────────────────────
@@ -128,7 +128,7 @@ class TaskServiceTest {
         val request = UpdateTaskRequest(title = "Updated Title", status = TaskStatus.IN_PROGRESS)
 
         whenever(taskRepository.findById(1L)).thenReturn(Optional.of(task))
-        whenever(taskRepository.save(any())).thenReturn(task)
+        whenever(taskRepository.save(any<Task>())).thenReturn(task)
 
         taskService.update(1L, request, ownerEmail)
 
@@ -147,7 +147,7 @@ class TaskServiceTest {
         assertThrows<ForbiddenException> {
             taskService.update(1L, UpdateTaskRequest(title = "Hack"), otherEmail)
         }
-        verify(taskRepository, never()).save(any())
+        verify(taskRepository, never()).save(any<Task>())
     }
 
     // ── Mark Done ─────────────────────────────────────────────────────────────
@@ -158,7 +158,7 @@ class TaskServiceTest {
         val task = mockTask(user)
 
         whenever(taskRepository.findById(1L)).thenReturn(Optional.of(task))
-        whenever(taskRepository.save(any())).thenReturn(task)
+        whenever(taskRepository.save(any<Task>())).thenReturn(task)
 
         val result = taskService.markDone(1L, ownerEmail)
 
@@ -188,6 +188,6 @@ class TaskServiceTest {
         whenever(taskRepository.findById(1L)).thenReturn(Optional.of(task))
 
         assertThrows<ForbiddenException> { taskService.delete(1L, otherEmail) }
-        verify(taskRepository, never()).delete(any<Task>())
+        verify(taskRepository, never()).delete(any())
     }
 }

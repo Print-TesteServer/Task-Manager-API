@@ -1,6 +1,7 @@
 package com.delta.taskmanager.config
 
 import com.delta.taskmanager.security.JwtAuthFilter
+import com.delta.taskmanager.security.JwtService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -19,12 +20,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val jwtAuthFilter: JwtAuthFilter,
     private val userDetailsService: UserDetailsService
 ) {
 
     @Bean
-    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun jwtAuthFilter(jwtService: JwtService, userDetailsService: UserDetailsService): JwtAuthFilter =
+        JwtAuthFilter(jwtService, userDetailsService)
+
+    @Bean
+    fun securityFilterChain(http: HttpSecurity, jwtAuthFilter: JwtAuthFilter): SecurityFilterChain {
         http
             .csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }

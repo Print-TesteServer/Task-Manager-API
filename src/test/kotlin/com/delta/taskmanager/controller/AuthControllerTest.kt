@@ -3,6 +3,7 @@ package com.delta.taskmanager.controller
 import com.delta.taskmanager.dto.auth.AuthResponse
 import com.delta.taskmanager.dto.auth.LoginRequest
 import com.delta.taskmanager.dto.auth.RegisterRequest
+import com.delta.taskmanager.config.WebMvcTestSecurityConfig
 import com.delta.taskmanager.exception.EmailAlreadyExistsException
 import com.delta.taskmanager.exception.GlobalExceptionHandler
 import com.delta.taskmanager.exception.InvalidCredentialsException
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
@@ -21,8 +23,11 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.post
 
-@WebMvcTest(AuthController::class)
-@Import(GlobalExceptionHandler::class)
+@WebMvcTest(
+    controllers = [AuthController::class],
+    excludeAutoConfiguration = [SecurityAutoConfiguration::class]
+)
+@Import(GlobalExceptionHandler::class, WebMvcTestSecurityConfig::class)
 @ActiveProfiles("test")
 class AuthControllerTest {
 

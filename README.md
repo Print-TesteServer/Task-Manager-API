@@ -23,8 +23,8 @@ REST API para gerenciamento de tarefas com autenticação JWT, desenvolvida em *
 ### Opção 1 — Docker (recomendado, sem dependências locais)
 
 ```bash
-git clone https://github.com/seu-usuario/task-manager.git
-cd task-manager
+git clone https://github.com/Print-TesteServer/Teste-Delta.git
+cd Teste-Delta
 
 docker compose up --build
 ```
@@ -38,8 +38,8 @@ A API estará disponível em `http://localhost:8080`.
 ### Opção 2 — Gradle local (requer JDK 17+)
 
 ```bash
-git clone https://github.com/seu-usuario/task-manager.git
-cd task-manager
+git clone https://github.com/Print-TesteServer/Teste-Delta.git
+cd Teste-Delta
 
 # Linux / macOS
 ./gradlew bootRun
@@ -48,7 +48,7 @@ cd task-manager
 gradlew.bat bootRun
 ```
 
-> Se não tiver o Gradle Wrapper no projeto, instale o Gradle 8+ e rode `gradle bootRun`.
+> Requer **JDK 17+** instalado e `JAVA_HOME` configurado corretamente.
 
 ---
 
@@ -181,7 +181,11 @@ src/main/kotlin/com/delta/taskmanager/
 ## Testes
 
 ```bash
+# Linux / macOS
 ./gradlew test
+
+# Windows
+gradlew.bat test
 ```
 
 Cobertura:

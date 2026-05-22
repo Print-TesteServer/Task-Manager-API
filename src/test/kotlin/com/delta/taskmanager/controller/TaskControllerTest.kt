@@ -4,6 +4,7 @@ import com.delta.taskmanager.dto.task.CreateTaskRequest
 import com.delta.taskmanager.dto.task.TaskResponse
 import com.delta.taskmanager.dto.task.UpdateTaskRequest
 import com.delta.taskmanager.entity.TaskStatus
+import com.delta.taskmanager.config.WebMvcTestSecurityConfig
 import com.delta.taskmanager.exception.ForbiddenException
 import com.delta.taskmanager.exception.GlobalExceptionHandler
 import com.delta.taskmanager.exception.ResourceNotFoundException
@@ -14,6 +15,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
@@ -28,10 +30,17 @@ import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
 import java.time.LocalDateTime
 
-@WebMvcTest(TaskController::class)
-@Import(GlobalExceptionHandler::class)
+@WebMvcTest(
+    controllers = [TaskController::class],
+    excludeAutoConfiguration = [SecurityAutoConfiguration::class]
+)
+@Import(GlobalExceptionHandler::class, WebMvcTestSecurityConfig::class)
 @ActiveProfiles("test")
 class TaskControllerTest {
+
+    companion object {
+        private const val USER_EMAIL = "user@email.com"
+    }
 
     @Autowired
     lateinit var mockMvc: MockMvc
@@ -41,8 +50,6 @@ class TaskControllerTest {
 
     @MockBean
     lateinit var taskService: TaskService
-
-    private val userEmail = "user@email.com"
 
     private fun taskResponse(id: Long = 1L) = TaskResponse(
         id = id,
@@ -56,10 +63,10 @@ class TaskControllerTest {
     // ── POST /api/tasks ───────────────────────────────────────────────────────
 
     @Test
-    @WithMockUser(username = userEmail)
+    @WithMockUser(username = USER_EMAIL)
     fun `POST tasks - 201 with created task`() {
         val request = CreateTaskRequest("My Task", "Description")
-        whenever(taskService.create(any(), eq(userEmail))).thenReturn(taskResponse())
+        whenever(taskService.create(any(), eq(USER_EMAIL))).thenReturn(taskResponse())
 
         mockMvc.post("/api/tasks") {
             contentType = MediaType.APPLICATION_JSON
@@ -72,7 +79,7 @@ class TaskControllerTest {
     }
 
     @Test
-    @WithMockUser(username = userEmail)
+    @WithMockUser(username = USER_EMAIL)
     fun `POST tasks - 400 when title is blank`() {
         val request = mapOf("title" to "")
 
@@ -87,10 +94,10 @@ class TaskControllerTest {
     // ── GET /api/tasks ────────────────────────────────────────────────────────
 
     @Test
-    @WithMockUser(username = userEmail)
+    @WithMockUser(username = USER_EMAIL)
     fun `GET tasks - 200 with list of tasks`() {
         val tasks = listOf(taskResponse(1L), taskResponse(2L))
-        whenever(taskService.listAll(eq(userEmail), eq(null))).thenReturn(tasks)
+        whenever(taskService.listAll(eq(USER_EMAIL), eq(null))).thenReturn(tasks)
 
         mockMvc.get("/api/tasks").andExpect {
             status { isOk() }
@@ -108,9 +115,9 @@ class TaskControllerTest {
     // ── GET /api/tasks/{id} ───────────────────────────────────────────────────
 
     @Test
-    @WithMockUser(username = userEmail)
+    @WithMockUser(username = USER_EMAIL)
     fun `GET tasks id - 200 when task exists and belongs to user`() {
-        whenever(taskService.findById(1L, userEmail)).thenReturn(taskResponse())
+        whenever(taskService.findById(1L, USER_EMAIL)).thenReturn(taskResponse())
 
         mockMvc.get("/api/tasks/1").andExpect {
             status { isOk() }
@@ -119,9 +126,9 @@ class TaskControllerTest {
     }
 
     @Test
-    @WithMockUser(username = userEmail)
+    @WithMockUser(username = USER_EMAIL)
     fun `GET tasks id - 404 when task not found`() {
-        whenever(taskService.findById(99L, userEmail))
+        whenever(taskService.findById(99L, USER_EMAIL))
             .thenThrow(ResourceNotFoundException("Task not found with id: 99"))
 
         mockMvc.get("/api/tasks/99").andExpect {
@@ -130,9 +137,9 @@ class TaskControllerTest {
     }
 
     @Test
-    @WithMockUser(username = userEmail)
+    @WithMockUser(username = USER_EMAIL)
     fun `GET tasks id - 403 when task belongs to another user`() {
-        whenever(taskService.findById(1L, userEmail))
+        whenever(taskService.findById(1L, USER_EMAIL))
             .thenThrow(ForbiddenException("You do not have access to this task"))
 
         mockMvc.get("/api/tasks/1").andExpect {
@@ -143,11 +150,11 @@ class TaskControllerTest {
     // ── PUT /api/tasks/{id} ───────────────────────────────────────────────────
 
     @Test
-    @WithMockUser(username = userEmail)
+    @WithMockUser(username = USER_EMAIL)
     fun `PUT tasks id - 200 with updated task`() {
         val request = UpdateTaskRequest(title = "Updated", status = TaskStatus.IN_PROGRESS)
         val updated = taskResponse().copy(title = "Updated", status = TaskStatus.IN_PROGRESS)
-        whenever(taskService.update(eq(1L), any(), eq(userEmail))).thenReturn(updated)
+        whenever(taskService.update(eq(1L), any(), eq(USER_EMAIL))).thenReturn(updated)
 
         mockMvc.put("/api/tasks/1") {
             contentType = MediaType.APPLICATION_JSON
@@ -162,10 +169,10 @@ class TaskControllerTest {
     // ── PATCH /api/tasks/{id}/done ────────────────────────────────────────────
 
     @Test
-    @WithMockUser(username = userEmail)
+    @WithMockUser(username = USER_EMAIL)
     fun `PATCH tasks id done - 200 with task marked DONE`() {
         val done = taskResponse().copy(status = TaskStatus.DONE)
-        whenever(taskService.markDone(1L, userEmail)).thenReturn(done)
+        whenever(taskService.markDone(1L, USER_EMAIL)).thenReturn(done)
 
         mockMvc.patch("/api/tasks/1/done").andExpect {
             status { isOk() }
@@ -176,7 +183,7 @@ class TaskControllerTest {
     // ── DELETE /api/tasks/{id} ────────────────────────────────────────────────
 
     @Test
-    @WithMockUser(username = userEmail)
+    @WithMockUser(username = USER_EMAIL)
     fun `DELETE tasks id - 204 on success`() {
         mockMvc.delete("/api/tasks/1").andExpect {
             status { isNoContent() }
@@ -184,9 +191,9 @@ class TaskControllerTest {
     }
 
     @Test
-    @WithMockUser(username = userEmail)
+    @WithMockUser(username = USER_EMAIL)
     fun `DELETE tasks id - 403 when another user tries to delete`() {
-        whenever(taskService.delete(1L, userEmail))
+        whenever(taskService.delete(1L, USER_EMAIL))
             .thenThrow(ForbiddenException("You do not have access to this task"))
 
         mockMvc.delete("/api/tasks/1").andExpect {

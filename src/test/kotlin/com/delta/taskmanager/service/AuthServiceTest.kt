@@ -38,7 +38,7 @@ class AuthServiceTest {
 
         whenever(userRepository.existsByEmail(request.email)).thenReturn(false)
         whenever(passwordEncoder.encode(request.password)).thenReturn("hashed-password")
-        whenever(userRepository.save(any())).thenReturn(user)
+        whenever(userRepository.save(any<User>())).thenReturn(user)
         whenever(jwtService.generateToken(user.email)).thenReturn("jwt-token")
 
         val result = authService.register(request)
@@ -47,7 +47,7 @@ class AuthServiceTest {
         assertEquals("Bearer", result.tokenType)
         assertEquals(user.email, result.email)
         assertEquals(user.name, result.name)
-        verify(userRepository).save(any())
+        verify(userRepository).save(any<User>())
     }
 
     @Test
@@ -56,7 +56,7 @@ class AuthServiceTest {
         whenever(userRepository.existsByEmail(request.email)).thenReturn(true)
 
         assertThrows<EmailAlreadyExistsException> { authService.register(request) }
-        verify(userRepository, never()).save(any())
+        verify(userRepository, never()).save(any<User>())
     }
 
     @Test
@@ -64,10 +64,10 @@ class AuthServiceTest {
         val request = RegisterRequest("User", "new@email.com", "plaintext")
         val user = mockUser("new@email.com")
 
-        whenever(userRepository.existsByEmail(any())).thenReturn(false)
+        whenever(userRepository.existsByEmail(any<String>())).thenReturn(false)
         whenever(passwordEncoder.encode("plaintext")).thenReturn("encoded")
-        whenever(userRepository.save(any())).thenReturn(user)
-        whenever(jwtService.generateToken(any())).thenReturn("token")
+        whenever(userRepository.save(any<User>())).thenReturn(user)
+        whenever(jwtService.generateToken(any<String>())).thenReturn("token")
 
         authService.register(request)
 
@@ -109,6 +109,6 @@ class AuthServiceTest {
         whenever(passwordEncoder.matches(request.password, user.password)).thenReturn(false)
 
         assertThrows<InvalidCredentialsException> { authService.login(request) }
-        verify(jwtService, never()).generateToken(any())
+        verify(jwtService, never()).generateToken(any<String>())
     }
 }
