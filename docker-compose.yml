@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: task-manager-api
+    ports:
+      - "8080:8080"
+    volumes:
+      # Persist the SQLite database file on the host
+      - ./data:/app/data
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:sqlite:/app/data/taskmanager.db
+      JWT_SECRET: ZGVsdGEtdGFzay1tYW5hZ2VyLXN1cGVyLXNlY3JldC1rZXktMjAyNS0wMDAwMDA=
+      JWT_EXPIRATION: 86400000
+    restart: unless-stopped

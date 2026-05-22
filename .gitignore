@@ -1,0 +1,27 @@
+# Build
+build/
+.gradle/
+out/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.class
+
+# SQLite database files (don't commit data)
+*.db
+*.db-shm
+*.db-wal
+data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Spring
+spring-shell.log

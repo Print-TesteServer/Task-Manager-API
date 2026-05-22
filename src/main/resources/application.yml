@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:./taskmanager.db
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  # 256-bit Base64 secret — change this in production!
+  secret: ZGVsdGEtdGFzay1tYW5hZ2VyLXN1cGVyLXNlY3JldC1rZXktMjAyNS0wMDAwMDA=
+  expiration: 86400000   # 24h in ms
+
+server:
+  port: 8080
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui
+    operationsSorter: method
