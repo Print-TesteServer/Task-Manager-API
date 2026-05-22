@@ -1,9 +1,10 @@
 spring:
   datasource:
-    url: jdbc:sqlite:./taskmanager.db
+    url: ${SPRING_DATASOURCE_URL:jdbc:sqlite:./taskmanager.db}
     driver-class-name: org.sqlite.JDBC
   jpa:
     database-platform: org.hibernate.community.dialect.SQLiteDialect
+    open-in-view: false
     hibernate:
       ddl-auto: update
     show-sql: false
@@ -12,12 +13,11 @@ spring:
         format_sql: true
 
 jwt:
-  # 256-bit Base64 secret — change this in production!
-  secret: ZGVsdGEtdGFzay1tYW5hZ2VyLXN1cGVyLXNlY3JldC1rZXktMjAyNS0wMDAwMDA=
-  expiration: 86400000   # 24h in ms
+  secret: ${JWT_SECRET:ZGVsdGEtdGFzay1tYW5hZ2VyLXN1cGVyLXNlY3JldC1rZXktMjAyNS0wMDAwMDA=}
+  expiration: ${JWT_EXPIRATION:86400000}
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 springdoc:
   api-docs:

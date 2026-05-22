@@ -9,6 +9,9 @@ out/
 .vscode/
 *.class
 
+# Environment (never commit secrets)
+.env
+
 # SQLite database files (don't commit data)
 *.db
 *.db-shm

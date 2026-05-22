@@ -1,5 +1,7 @@
 # Task Manager API
 
+[![CI](https://github.com/Print-TesteServer/Teste-Delta/actions/workflows/ci.yml/badge.svg)](https://github.com/Print-TesteServer/Teste-Delta/actions/workflows/ci.yml)
+
 REST API para gerenciamento de tarefas com autenticação JWT, desenvolvida em **Kotlin + Spring Boot**. Teste técnico Delta.
 
 ---
@@ -49,6 +51,56 @@ gradlew.bat bootRun
 ```
 
 > Requer **JDK 17+** instalado e `JAVA_HOME` configurado corretamente.
+
+#### Configurar `JAVA_HOME` no Windows (PowerShell)
+
+```powershell
+# Verifique onde o JDK está instalado (ex.: Temurin 17)
+where.exe java
+
+# Defina para a sessão atual (sem barra no final do caminho)
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.13.11-hotspot"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+
+# Confirme
+java -version
+.\gradlew.bat test
+```
+
+Para tornar permanente: **Configurações → Sistema → Sobre → Configurações avançadas do sistema → Variáveis de ambiente** → crie ou edite `JAVA_HOME` apontando para a pasta do JDK (não para `bin`).
+
+#### Variáveis de ambiente locais (opcional)
+
+Copie `.env.example` para `.env` e ajuste se necessário. O Spring Boot lê `JWT_SECRET`, `JWT_EXPIRATION` e `SPRING_DATASOURCE_URL` automaticamente.
+
+---
+
+## Teste manual rápido (E2E)
+
+Com a API rodando em `http://localhost:8080`:
+
+```bash
+# 1. Cadastro (guarde o token da resposta)
+curl -s -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Teste","email":"teste@email.com","password":"senha123"}'
+
+# 2. Login (alternativa)
+curl -s -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"teste@email.com","password":"senha123"}'
+
+# 3. Criar tarefa (substitua TOKEN)
+curl -s -X POST http://localhost:8080/api/tasks \
+  -H "Authorization: Bearer TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Minha tarefa","status":"PENDING"}'
+
+# 4. Listar tarefas do usuário autenticado
+curl -s http://localhost:8080/api/tasks -H "Authorization: Bearer TOKEN"
+```
+
+Fluxo esperado: cadastro/login retorna **201/200** com `token`; criar tarefa retorna **201**; sem token, `GET /api/tasks` retorna **401**.
 
 ---
 
@@ -193,6 +245,9 @@ Cobertura:
 - **TaskServiceTest** — CRUD completo, filtragem por status, controle de acesso entre usuários
 - **AuthControllerTest** — validação de payload, status HTTP, tratamento de erros
 - **TaskControllerTest** — endpoints protegidos, 401/403/404 em cenários de erro
+- **TaskManagerIntegrationTest** — fluxo completo com JWT real (H2), isolamento entre usuários (403), e-mail duplicado (409)
+
+O pipeline **GitHub Actions** (`.github/workflows/ci.yml`) executa `./gradlew test` em cada push na branch `main`.
 
 ---
 
@@ -205,13 +260,15 @@ Cobertura:
 
 ---
 
-## Variáveis de ambiente (produção)
+## Variáveis de ambiente
 
-| Variável | Padrão | Descrição |
+| Variável | Padrão (dev) | Descrição |
 |---|---|---|
-| `SPRING_DATASOURCE_URL` | `jdbc:sqlite:./taskmanager.db` | URL do banco |
-| `JWT_SECRET` | *(ver application.yml)* | Segredo Base64 de 256 bits |
+| `SPRING_DATASOURCE_URL` | `jdbc:sqlite:./taskmanager.db` | URL JDBC do banco |
+| `JWT_SECRET` | valor em `application.yml` | Segredo **Base64** (256 bits) para assinar JWT |
 | `JWT_EXPIRATION` | `86400000` | Expiração do token em ms (24h) |
 | `SERVER_PORT` | `8080` | Porta HTTP |
 
-> ⚠️ Em produção, troque o `JWT_SECRET` por um valor gerado aleatoriamente e nunca o commite no repositório.
+No Docker Compose, `JWT_SECRET` e `SPRING_DATASOURCE_URL` já são injetados. Para desenvolvimento local, use `.env.example` como referência.
+
+> ⚠️ Em produção, gere um `JWT_SECRET` aleatório (Base64, 256 bits) e injete via variável de ambiente — nunca commite segredos reais no repositório.
