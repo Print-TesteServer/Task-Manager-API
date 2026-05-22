@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.*
 class TaskController(private val taskService: TaskService) {
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new task")
     fun create(
         @Valid @RequestBody request: CreateTaskRequest,
@@ -64,7 +63,6 @@ class TaskController(private val taskService: TaskService) {
         ResponseEntity.ok(taskService.markDone(id, user.username))
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete a task")
     fun delete(
         @PathVariable id: Long,

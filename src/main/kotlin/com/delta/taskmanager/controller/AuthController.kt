@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*
 class AuthController(private val authService: AuthService) {
 
     @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Register a new user")
     fun register(@Valid @RequestBody request: RegisterRequest): ResponseEntity<AuthResponse> =
         ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request))
