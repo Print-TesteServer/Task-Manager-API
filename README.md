@@ -31,7 +31,22 @@ cd Teste-Delta
 docker compose up --build
 ```
 
-A API estará disponível em `http://localhost:8080`.
+Quando a aplicação subir, o terminal exibirá um bloco com as URLs (clicáveis no VS Code, Windows Terminal e Docker Desktop).
+
+### Onde abrir no navegador
+
+Este projeto é uma **API REST** (JSON). A única interface visual para testar no navegador é o **Swagger UI**:
+
+**http://localhost:8080/swagger-ui/index.html**
+
+| URL | Uso |
+|-----|-----|
+| [Swagger UI](http://localhost:8080/swagger-ui/index.html) | Testar cadastro, login e tarefas no navegador |
+| [OpenAPI JSON](http://localhost:8080/api-docs) | Especificação da API |
+| `http://localhost:8080/` | Não há página inicial (pode retornar 401) |
+| `http://localhost:8080/api/tasks` | Requer JWT — no navegador sem token retorna **401** (JSON) |
+
+**Fluxo no Swagger:** `POST /api/auth/register` ou `/login` → copie o `token` → botão **Authorize** → `Bearer <token>` → teste os endpoints em **Tasks**.
 
 > O banco SQLite é persistido em `./data/taskmanager.db` no host.
 
@@ -50,7 +65,7 @@ cd Teste-Delta
 gradlew.bat bootRun
 ```
 
-> Requer **JDK 17+** instalado e `JAVA_HOME` configurado corretamente.
+Ao iniciar, as mesmas URLs do Swagger aparecem no terminal. Requer **JDK 17** no `JAVA_HOME` (Gradle 8.7 não roda com Java 25).
 
 #### Configurar `JAVA_HOME` no Windows (PowerShell)
 
@@ -106,13 +121,13 @@ Fluxo esperado: cadastro/login retorna **201/200** com `token`; criar tarefa ret
 
 ## Documentação interativa (Swagger UI)
 
-Após subir a aplicação, acesse:
+Link direto: **http://localhost:8080/swagger-ui/index.html**
 
-```
-http://localhost:8080/swagger-ui/index.html
-```
-
-Clique em **Authorize** e cole o token JWT obtido no login para testar os endpoints protegidos.
+1. Execute a aplicação (Docker ou `gradlew bootRun`).
+2. Abra o link acima (ou clique na URL impressa no terminal).
+3. Em **Authentication**, faça register/login e copie o `token`.
+4. Clique em **Authorize** e informe `Bearer <seu-token>`.
+5. Use os endpoints em **Tasks**.
 
 ---
 
@@ -238,6 +253,9 @@ src/main/kotlin/com/delta/taskmanager/
 
 # Windows
 gradlew.bat test
+
+# Docker
+docker run --rm -v "${PWD}:/app" -w /app gradle:8.7-jdk17 gradle test --no-daemon
 ```
 
 Cobertura:
